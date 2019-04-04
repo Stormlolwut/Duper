@@ -24,9 +24,31 @@ done
 
 shift $((OPTIND-1))
 
-dir=$@
-echo $dir
+check_files(){
+	
+	 while read -r line ; do
+		
+		sha=$( shasum -a 256 "$line" ) #creates sha for all the files currencly searching
+		sha_collection+=("$sha")
+		printf "%s SHA: %s \\n" "$line" "$sha" 
+		
+	done < <(find . -type f) 
 
-find / -type d -name "$dir" 2> /dev/null 
+	echo "${sha_collection[@]}"
+}
 
+find_duplicates(){
+	
+	echo "${#sha_collection[@]}"
 
+	if [ "${#sha_collection[@]}" -eq 0 ] ; then #check if the there are elements in the array
+		echo "There are no files to check"
+	else
+		printf '%s\n' "${sha_collection[@]}" | awk '($0 in dupe) {dupe[$0]; next } 1'
+	fi
+}
+
+declare -a sha_collection
+
+sha_collection={"${check_files[@]}"}
+find_duplicates
