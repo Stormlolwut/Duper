@@ -48,7 +48,23 @@ find_duplicates(){
 	fi
 }
 
+#Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld: start-tijd, eind-tijd
+log_process() {	
+	if [ ! -d "~/var" ]; then
+		mkdir ~/var
+	fi
+	
+	endTime=`date "+%a %d %b %Y %T:%N"`
+	logOutput="StartTime $startTime \nEndTime: $endTime"
+	
+	echo -e $logOutput > ~/var/duper.log
+}
+
+startTime=`date "+%a %d %b %Y %T:%N"`
 declare -a sha_collection
 
 sha_collection={"${check_files[@]}"}
 find_duplicates
+
+# log the process at the end of the script
+log_process $startTime
