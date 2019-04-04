@@ -42,8 +42,8 @@ find_dupe(){
 }
 
 #Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld: start-tijd, eind-tijd
-log_process() {	
-	if [ ! -d "~/var" ]; then
+log_process() {
+	if [ -d "~/var" ]; then
 		mkdir ~/var
 	fi
 	
