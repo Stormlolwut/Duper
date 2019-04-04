@@ -53,9 +53,9 @@ log_process() {
 	
 	
 	endTime=$(date "+%a %d %b %Y %T:%N")
-	logOutput="StartTime $startTime \\nEndTime: $endTime \\nAmount duplicates found: $amountDuplicatesFound"
+	logOutput="StartTime $startTime \\nEndTime: $endTime \\nAmount duplicates found: $amountDuplicatesFound\\n"
 	
-	echo -e "$logOutput" > ~/var/duper.log
+	echo -e "$logOutput" >> ~/var/duper.log
 }
 
 amountDuplicatesFound=0;
