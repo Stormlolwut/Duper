@@ -5,7 +5,8 @@ while getopts ":rx:l:" args ; do
 	
 	case $args in
 	r)
-		echo "Delete all the duplicates"	
+		echo "Delete all the duplicates"
+		remove=true	
 	;;
 	x)
 		echo "Exclude the following file $OPTARG"
@@ -38,19 +39,32 @@ find_dupe(){
 		echo "There are no files to check"
 	else
 	       	duplicates=$(printf '%s\n' "${sha_collection[@]}" | awk '!($1 in dupe) { dupe[$1]; next; } 1')
-			printf '%s \n' "$duplicates"
-			
-			amountDuplicatesFound=$(wc -l <<< "$duplicates")
+		dupePath=$( printf '%s\n' "$duplicates" | awk '{print $2}' )
+
+		#printf '%s\n' "$dupePath"
+		#printf '%s \\n' "$duplicates"
+		amountDuplicatesFound=$(wc -l <<< "$duplicates")
+	fi
+
+	remove_dupe
+}
+
+remove_dupe(){
+	
+	if [ ! -z  $remove ] ; then
+		
+		for file in $dupePath ;  do
+			rm "$file"
+		done
 	fi
 }
 
 #Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld: start-tijd, eind-tijd
 log_process() {
+
 	if [ ! -d "$HOME/var" ]; then
 		mkdir ~/var
 	fi
-	
-	
 	
 	endTime=$(date "+%a %d %b %Y %T:%N")
 	logOutput="StartTime $startTime \\nEndTime: $endTime \\nAmount duplicates found: $amountDuplicatesFound\\n"
@@ -59,11 +73,13 @@ log_process() {
 }
 
 amountDuplicatesFound=0;
-
 startTime=$(date "+%a %d %b %Y %T:%N")
+remove=
+
 declare -a sha_collection
 
 
-find_dupe
 log_process "$startTime"
+find_dupe
+
 
