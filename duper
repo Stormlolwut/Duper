@@ -33,30 +33,37 @@ find_dupe(){
 		#printf "%s SHA: %s \\n" "$line" "$sha" 
 		
 	done < <(find . -type f)	
-
+	
 	if [ "${#sha_collection[@]}" -eq 0 ] ; then       
 		echo "There are no files to check"
 	else
-	       	printf '%s\n' "${sha_collection[@]}" | awk '!($1 in dupe) {dupe[$1]; next} 1' 
+	       	duplicates=$(printf '%s\n' "${sha_collection[@]}" | awk '!($1 in dupe) { dupe[$1]; next; } 1')
+			printf '%s \n' "$duplicates"
+			
+			amountDuplicatesFound=$(wc -l <<< "$duplicates")
 	fi
 }
 
 #Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld: start-tijd, eind-tijd
 log_process() {
-	if [ -d "~/var" ]; then
+	if [ ! -d "$HOME/var" ]; then
 		mkdir ~/var
 	fi
 	
-	endTime=`date "+%a %d %b %Y %T:%N"`
-	logOutput="StartTime $startTime \nEndTime: $endTime"
 	
-	echo -e $logOutput > ~/var/duper.log
+	
+	endTime=$(date "+%a %d %b %Y %T:%N")
+	logOutput="StartTime $startTime \\nEndTime: $endTime \\nAmount duplicates found: $amountDuplicatesFound"
+	
+	echo -e "$logOutput" > ~/var/duper.log
 }
 
-startTime=`date "+%a %d %b %Y %T:%N"`
+amountDuplicatesFound=0;
+
+startTime=$(date "+%a %d %b %Y %T:%N")
 declare -a sha_collection
 
 
 find_dupe
-log_process $startTime
+log_process "$startTime"
 
