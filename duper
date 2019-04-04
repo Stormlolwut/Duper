@@ -1,0 +1,32 @@
+#!/bin/bash
+
+
+while getopts ":rx:l:" args ; do
+	
+	case $args in
+	r)
+		echo "Delete all the duplicates"	
+	;;
+	x)
+		echo "Exclude the following file $OPTARG"
+	;;
+	l)
+		echo "Landcode $OPTARG"
+	;;
+	:)
+		echo "Oops! forgot to give an imput for $OPTARG"
+	;;
+	/?)
+		echo "Please give a valid input"
+	;;	
+	esac
+done
+
+shift $((OPTIND-1))
+
+dir=$@
+echo $dir
+
+find / -type d -name "$dir" 2> /dev/null 
+
+
