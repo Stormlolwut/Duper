@@ -113,6 +113,7 @@ done
 
 shift $((OPTIND-1))
 
+
 # Get folder direction		
 if [ -z "$1" ]; then
 	echo "Please provide a directory"	
@@ -131,7 +132,6 @@ else
 fi
 
 startDirectory="$1"
-
 
 find_dupe
 remove_dupe
