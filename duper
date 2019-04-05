@@ -111,25 +111,6 @@ while getopts ":rx:l:" args ; do
 	esac
 done
 
-# Get folder direction		
-if [ -z "$1" ]; then
-	echo "Please provide a directory"	
-	exit 2;	
-else	
-	# Check if valid directory.	
-	if [ ! -d "$1" ]; then	
-		echo "Given path is not a directory or does not exist";	
-		exit 2;	
-	fi	
-
- 	if [ ! -w "$1" ]; then	
-		echo "You do not have write permission for this directory"	
-		exit 2;	
-	fi	
-fi
-
-startDirectory="$1"
-
 shift $((OPTIND-1))
 
 
