@@ -1,28 +1,51 @@
 #!/bin/bash
 
-
+# Get options
 while getopts ":rx:l:" args ; do
 	
 	case $args in
 	r)
 		echo "Delete all the duplicates"	
-	;;
+		;;
 	x)
 		echo "Exclude the following file $OPTARG"
-	;;
+		;;
 	l)
 		echo "Landcode $OPTARG"
-	;;
+		;;
 	:)
 		echo "Oops! forgot to give an imput for $OPTARG"
-	;;
-	/?)
-		echo "Please give a valid input"
-	;;	
+		;;
+	\?)
+		# TODO output a handle error
+		echo "Usage: DELETE -r | EXCLUDE -x <name> | LANDGUAGE -l <code>"
+		exit 2;
+		;;	
 	esac
 done
 
-shift $((OPTIND-1))
+shift "$((OPTIND-1))"
+
+
+# Get folder direction
+if [ -z "$1" ]; then
+	echo "Please provide a directory"
+	exit 2;
+else
+	# Check if valid directory.
+	if [ ! -d "$1" ]; then
+		echo "Given path is not a directory or does not exist";
+		exit 2;
+	fi
+	
+	if [ ! -w "$1" ]; then
+		echo "You do not have write permission for this directory"
+		exit 2;
+	fi
+fi
+
+
+startDirectory="$1"
 
 find_dupe(){
 	
@@ -46,6 +69,7 @@ find_dupe(){
 
 #Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld: start-tijd, eind-tijd
 log_process() {
+# TODO: If delete is activate show the amount deleted files in log.
 	if [ ! -d "$HOME/var" ]; then
 		mkdir ~/var
 	fi
