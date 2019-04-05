@@ -45,7 +45,7 @@ find_dupe(){
 
 		#printf '%s\n' "$dupePath"
 		
-		[ -z $duplicates ] || printf 'Duplicate found: %s \n' "$duplicates"
+		[ -z "$duplicates" ] || printf 'Duplicate found: %s \n' "$duplicates"
 		amountDuplicatesFound=$(wc -l <<< "$duplicates")
 	fi
 }
@@ -53,7 +53,7 @@ find_dupe(){
 remove_dupe(){
 	
 	if [ ! -z "$remove" ] ; then
-		
+		echo "test"
 		for file in $dupe_path ;  do
 			echo "Removed: $file"
 			rm "$file"
@@ -70,13 +70,13 @@ log_process() {
 	endTime=$(date "+%a %d %b %Y %T:%N")
 	
 	logOutput="StartTime $startTime \\nEndTime: $endTime"
-	echo $remove;
-	if [ ! -z $remove ]; then
+	
+	if [ -z "$remove" ] ; then
 		logOutput+="\\nAmount duplicates found: $amountDuplicatesFound\\n"
 	else
 		logOutput+="\\nAmount duplicates found and removed: $amountDuplicatesFound\\n"
 	fi
-	
+		
 	echo -e "$logOutput" >> ~/var/duper.log
 }
 
@@ -105,7 +105,7 @@ while getopts ":rx:l:" args ; do
 		echo "Oops! forgot to give an imput for $OPTARG"
 	;;
 	/?)
-    echo "Usage: DELETE -r | EXCLUDE -x <name> | LANGUAGE -l <code>"
+    	echo "Usage: DELETE -r | EXCLUDE -x <name> | LANGUAGE -l <code>"
 		exit 2
 	;;	
 	esac
