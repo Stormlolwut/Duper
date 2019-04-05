@@ -55,7 +55,7 @@ find_dupe(){
 		sha_collection+=("$sha")
 		#printf "%s SHA: %s \\n" "$line" "$sha" 
 		
-	done < <(find . -type f )	
+	done < <(find . -type f)	
 	
 	if [ "${#sha_collection[@]}" -eq 0 ] ; then       
 		echo "There are no files to check"
