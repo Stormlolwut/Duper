@@ -19,8 +19,8 @@ while getopts ":rx:l:" args ; do
 		;;
 	\?)
 		# TODO output a handle error
-		echo "Usage: DELETE -r | EXCLUDE -x <name> | LANDGUAGE -l <code>"
-		exit 2;
+		echo "Usage: DELETE -r | EXCLUDE -x <name> | LANGUAGE -l <code>"
+		exit 2
 		;;	
 	esac
 done
@@ -75,23 +75,28 @@ find_dupe(){
 remove_dupe(){
 	
 	if [ ! -z  $remove ] ; then
-		
+	
 		for file in $dupePath ;  do
 			rm "$file"
 		done
 	fi
 }
 
-#Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld: start-tijd, eind-tijd
+# Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld: start-tijd, eind-tijd
 log_process() {
-
-# TODO: If delete is activate show the amount deleted files in log.
 	if [ ! -d "$HOME/var" ]; then
 		mkdir ~/var
 	fi
 	
 	endTime=$(date "+%a %d %b %Y %T:%N")
-	logOutput="StartTime $startTime \\nEndTime: $endTime \\nAmount duplicates found: $amountDuplicatesFound\\n"
+	
+	logOutput="StartTime $startTime \\nEndTime: $endTime"
+	echo $remove;
+	if [ ! -z $remove ]; then
+		logOutput+="\\nAmount duplicates found: $amountDuplicatesFound\\n"
+	else
+		logOutput+="\\nAmount duplicates found and removed: $amountDuplicatesFound\\n"
+	fi
 	
 	echo -e "$logOutput" >> ~/var/duper.log
 }
@@ -103,7 +108,10 @@ remove=
 declare -a sha_collection
 
 
-log_process "$startTime"
+
 find_dupe
+
+# Has to be called at the end of the script
+log_process
 
 
