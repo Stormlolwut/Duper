@@ -30,7 +30,6 @@ find_dupe(){
 		if [ $isExcluded -eq 0 ] ; then
 		       echo "This file is excluded $line"
 	       	else	       
-
 			sha=$( shasum -a 256 "$line" ) #creates sha for all the files currencly searching
 			sha_collection+=("$sha")
 			#printf "%s SHA: %s \\n" "$line" "$sha" 
@@ -107,8 +106,8 @@ done
 
 shift $((OPTIND-1))
 
-log_process "$startTime"
 find_dupe
 remove_dupe
+log_process "$startTime"
 
 
