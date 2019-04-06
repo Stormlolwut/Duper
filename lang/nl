@@ -1,0 +1,12 @@
+#!/bin/bash
+
+
+readonly LANG_FILE_IS_EXCLUDED="Dit bestand word genegeerd"
+readonly LANG_NO_FILE_TO_CHECK="Er zijn geen bestanden gevonden"
+readonly LANG_DUPLICATION_FOUND="Kopies gevonden:"
+readonly LANG_REMOVED="Verwijdert:"
+readonly LANG_DELETE_ALL_DUPLICATES="Verwijder alle kopieën"
+readonly LANG_FORGOT_TO_GIVE_INPUT="Oeps! Geen input gegeven"
+readonly LANG_PLEASE_PROVIDE_DIRECTORY="Geef een start map aan a.u.b."
+readonly LANG_INVALID_DIRECTORY="Gegeven start map is een bestand of het bestaat niet"
+readonly LANG_DIRECTORY_NO_PERMISSIONS="U heeft geen toegang voor dit map"
