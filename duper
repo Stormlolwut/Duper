@@ -2,8 +2,10 @@
 
 contains(){
 
-	local item=$(basename $1)
-	local array+=($@)
+	local item=
+	item=$(basename "$1")
+
+	local array+=("$@")
 
 	#echo "Item: $item"
 	#printf '%s\n' "${array[@]}"
@@ -18,7 +20,9 @@ find_dupe(){
 	
 	local duplicates=
 	local sha=
+
 	local sha_collection=()
+	local file_collection=()
 
 	while read -r line ; do
 		
@@ -29,9 +33,10 @@ find_dupe(){
 		if [ $isExcluded -eq 0 ] ; then
 		       echo "This file is excluded $line"
 	       	else	       
-
 			sha=$( shasum -a 256 "$line" ) #creates sha for all the files currencly searching
-			sha_collection+=("$sha")
+			sha_collection+=($(echo "$sha" | awk '{ print $1 }'))
+			file_collection+=("$line")
+
 			#printf "%s SHA: %s \\n" "$line" "$sha" 
 		fi
 
@@ -40,21 +45,50 @@ find_dupe(){
 	if [ "${#sha_collection[@]}" -eq 0 ] ; then       
 		echo "There are no files to check"
 	else
-		duplicates=$(printf '%s\n' "${sha_collection[@]}" | awk '!($1 in dupe) { dupe[$1]; next; } 1')
-		dupe_path=$(printf '%s\n' "$duplicates" | awk '{print $2}' )
-
-		#printf '%s\n' "$dupePath"
+		#duplicates=$(printf '%s\n' "${sha_collection[@]}" | awk '!($1 in dupe) { dupe[$1]; next; } 1')		
+		#dupe_path+=($(printf '%s' "$duplicates" | awk -F, '{ $1=""; print $0 }'))
 		
-		[ -z "$duplicates" ] || printf 'Duplicate found: %s \n' "$duplicates"
-		amountDuplicatesFound=$(wc -l <<< "$duplicates")
+		#printf '%s\n' "${dupe_path[@]}"
+
+		#[ -z "$duplicates" ] || printf '%s ,' "$duplicates"
+		
+		#printf '%s\n' "${sha_collection[@]}"
+		
+
+		local tempArray=()
+		local dupes=()
+
+		for i in "${!sha_collection[@]}" ; do
+			
+			local isDupe=
+
+			for j in "${tempArray[@]}" ; do 
+				
+				if [[ "${sha_collection[$i]}" == "$j" ]] ; then
+					dupes+=("${file_collection[$i]}")
+					echo "Duplication found: ${file_collection[$i]}"
+					isDupe=true
+				fi	
+			done			
+			
+			[ -z "$isDupe" ] && tempArray+=("${sha_collection[$i]}")
+		done
+		
+
+		#printf '%s\n' "${tempArray[@]}"
+		#printf ': %s\n' "${dupes[@]}"
+		
+		dupe_path=("${dupes[@]}")
+		amountDuplicatesFound=$(wc -l <<< "${dupes[@]}") 
 	fi
 }
 
 remove_dupe(){
 	
 	if [ ! -z "$remove" ] ; then
-
-		for file in $dupe_path ;  do
+		
+		for file in "${dupe_path[@]}" ;  do
+			echo "==="
 			echo "Removed: $file"
 			rm "$file"
 		done
@@ -136,7 +170,4 @@ startDirectory="$1"
 find_dupe
 remove_dupe
 
-# Has to be called at the end of the script
 log_process
-
-
