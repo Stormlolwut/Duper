@@ -74,6 +74,7 @@ find_dupe(){
 			[ -z "$isDupe" ] && tempArray+=("${sha_collection[$i]}")
 		done
 		
+
 		#printf '%s\n' "${tempArray[@]}"
 		#printf ': %s\n' "${dupes[@]}"
 		
@@ -103,13 +104,13 @@ log_process() {
 	endTime=$(date "+%a %d %b %Y %T:%N")
 	
 	logOutput="StartTime $startTime \\nEndTime: $endTime"
-	echo $remove;
-	if [ ! -z $remove ]; then
+	
+	if [ -z "$remove" ] ; then
 		logOutput+="\\nAmount duplicates found: $amountDuplicatesFound\\n"
 	else
 		logOutput+="\\nAmount duplicates found and removed: $amountDuplicatesFound\\n"
 	fi
-	
+		
 	echo -e "$logOutput" >> ~/var/duper.log
 }
 
@@ -138,13 +139,33 @@ while getopts ":rx:l:" args ; do
 		echo "Oops! forgot to give an imput for $OPTARG"
 	;;
 	/?)
-    echo "Usage: DELETE -r | EXCLUDE -x <name> | LANGUAGE -l <code>"
+    	echo "Usage: DELETE -r | EXCLUDE -x <name> | LANGUAGE -l <code>"
 		exit 2
 	;;	
 	esac
 done
 
 shift $((OPTIND-1))
+
+
+# Get folder direction		
+if [ -z "$1" ]; then
+	echo "Please provide a directory"	
+	exit 2;	
+else	
+	# Check if valid directory.	
+	if [ ! -d "$1" ]; then	
+		echo "Given path is not a directory or does not exist";	
+		exit 2;	
+	fi	
+
+ 	if [ ! -w "$1" ]; then	
+		echo "You do not have write permission for this directory"	
+		exit 2;	
+	fi	
+fi
+
+startDirectory="$1"
 
 find_dupe
 remove_dupe
