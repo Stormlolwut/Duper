@@ -31,7 +31,7 @@ find_dupe(){
 		isExcluded=$?	
 			
 		if [ $isExcluded -eq 0 ] ; then
-		       echo "This file is excluded $line"
+		       echo "$LANG_FILE_IS_EXCLUDED $line"
 	       	else	       
 			sha=$( shasum -a 256 "$line" ) #creates sha for all the files currencly searching
 			sha_collection+=($(echo "$sha" | awk '{ print $1 }'))
@@ -43,7 +43,7 @@ find_dupe(){
 	done < <(find $startDirectory -type f)	
 	
 	if [ "${#sha_collection[@]}" -eq 0 ] ; then       
-		echo "There are no files to check"
+		echo "$LANG_NO_FILE_TO_CHECK"
 	else
 		#duplicates=$(printf '%s\n' "${sha_collection[@]}" | awk '!($1 in dupe) { dupe[$1]; next; } 1')		
 		#dupe_path+=($(printf '%s' "$duplicates" | awk -F, '{ $1=""; print $0 }'))
@@ -66,7 +66,7 @@ find_dupe(){
 				
 				if [[ "${sha_collection[$i]}" == "$j" ]] ; then
 					dupes+=("${file_collection[$i]}")
-					echo "Duplication found: ${file_collection[$i]}"
+					echo "$LANG_DUPLICATION_FOUND ${file_collection[$i]}"
 					isDupe=true
 				fi	
 			done			
@@ -89,13 +89,15 @@ remove_dupe(){
 		
 		for file in "${dupe_path[@]}" ;  do
 			echo "==="
-			echo "Removed: $file"
+			echo "$LANG_REMOVED $file"
 			rm "$file"
 		done
 	fi
 }
 
 # Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld: start-tijd, eind-tijd
+amountDuplicatesFound=0;
+startTime=$(date "+%a %d %b %Y %T:%N")
 log_process() {
 	if [ ! -d "$HOME/var" ]; then
 		mkdir ~/var
@@ -114,58 +116,74 @@ log_process() {
 	echo -e "$logOutput" >> ~/var/duper.log
 }
 
-amountDuplicatesFound=0;
-startTime=$(date "+%a %d %b %Y %T:%N")
 
 remove=
+language="en"
 declare -a dupe_path
 declare -a excluded_files
-
+forgotToGiveInput=
 while getopts ":rx:l:" args ; do
 	
 	case $args in
 	r)
-		echo "Delete all the duplicates"
 		remove=true	
-	;;
+		;;
 	x)
 		#echo "Exclude the following file $OPTARG"
 		excluded_files+=("$OPTARG")
-	;;
+		;;
 	l)
 		echo "Landcode $OPTARG"
-	;;
+		language=("$OPTARG")
+		;;
 	:)
-		echo "Oops! forgot to give an imput for $OPTARG"
-	;;
-	/?)
-    	echo "Usage: DELETE -r | EXCLUDE -x <name> | LANGUAGE -l <code>"
+		forgotToGiveInput=true
+		;;
+	\?)
+    	echo "Usage: DELETE -r | EXCLUDE -x <name> | LANGUAGE -l <landcode>"
 		exit 2
-	;;	
+		;;	
 	esac
 done
 
 shift $((OPTIND-1))
 
+# Get language
+if [ ! -e "$(dirname "$0")/lang/$language" ]; then
+	echo "INVALID language"
+	exit 2;
+elif [ -d "$(dirname "$0")/lang/$language" ]; then
+	echo "INVALID language"
+	exit 2
+fi
+source "$(dirname "$0")/lang/$language"
 
 # Get folder direction		
 if [ -z "$1" ]; then
-	echo "Please provide a directory"	
+	echo "$LANG_PLEASE_PROVIDE_DIRECTORY"	
 	exit 2;	
 else	
 	# Check if valid directory.	
 	if [ ! -d "$1" ]; then	
-		echo "Given path is not a directory or does not exist";	
+		echo "$LANG_INVALID_DIRECTORY";	
 		exit 2;	
 	fi	
 
  	if [ ! -w "$1" ]; then	
-		echo "You do not have write permission for this directory"	
+		echo "$LANG_DIRECTORY_NO_PERMISSIONS"	
 		exit 2;	
 	fi	
 fi
-
 startDirectory="$1"
+
+# OUTPUT options
+if [ ! -z "$remove" ]; then 
+	echo "$LANG_DELETE_ALL_DUPLICATES"
+fi
+if [ ! -z "$forgotToGiveInput" ]; then
+	echo "$LANG_FORGOT_TO_GIVE_INPUT $OPTARG"
+fi
+
 
 find_dupe
 remove_dupe
