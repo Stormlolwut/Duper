@@ -40,7 +40,7 @@ find_dupe(){
 			#printf "%s SHA: %s \\n" "$line" "$sha" 
 		fi
 
-	done < <(find . -type f)	
+	done < <(find $startDirectory -type f)	
 	
 	if [ "${#sha_collection[@]}" -eq 0 ] ; then       
 		echo "There are no files to check"
