@@ -198,7 +198,7 @@ while getopts ":rx:l:f:" args ; do
 		forgotToGiveInput=true
 		;;
 	\?)
-    	echo "Usage: DELETE -r | EXCLUDE -x <name> | LANGUAGE -l <landcode>"
+    	echo "Usage: duper [-r] [-x] [-l] [-f] <start-directory>"
 		exit 2
 		;;	
 	esac

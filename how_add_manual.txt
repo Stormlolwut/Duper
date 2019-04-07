@@ -1,7 +1,0 @@
-gzip duper.1
-
-cp duper.1.gz ~/man/man1
-
-MANPATH=$MANPATH:$HOME/man/man1
-
-man manual_duper
