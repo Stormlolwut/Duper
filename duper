@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Studenten:
 #			Huseyin Caliskan 2143416
 #			Storm Witziers <studentnummer>
@@ -23,6 +24,7 @@
 
 # Extra
 #
+# optie -f <filename> om een bestand aan te maken met daarin de absolute paden naar alle gevonden duplicaten. Op elke regel staat 1 bestandsnaam omgeven door "-karakters. Dit bestand kan gebruikt worden om op een later tijdstip een bewerking op de gevonden duplicaten te kunnen doen met andere tool dan duper.
 # Zoek uit hoe je een eigen man pagemaakt, en maak er een voor duper.
 
 contains(){
@@ -65,7 +67,7 @@ find_dupe(){
 			#printf "%s SHA: %s \\n" "$line" "$sha" 
 		fi
 
-	done < <(find $startDirectory -type f)	
+	done < <(find "$startDirectory" -type f)	
 	
 	if [ "${#sha_collection[@]}" -eq 0 ] ; then       
 		echo "$LANG_NO_FILE_TO_CHECK"
@@ -104,8 +106,34 @@ find_dupe(){
 		#printf ': %s\n' "${dupes[@]}"
 		
 		dupe_path=("${dupes[@]}")
-		amountDuplicatesFound=$(wc -l <<< "${dupes[@]}") 
+		amountDuplicatesFound=$(wc -l <<< "${dupes[@]}")
+		
+		if [ ! -z "$fFileName" ]; then
+			create_abs_filepaths_file "${dupe_path[@]}"
+		fi
 	fi
+}
+
+get_abs_filename() {
+  # $1 : relative filename
+  echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+}
+
+create_abs_filepaths_file() {
+  	touch "$fFileName"
+
+	# Empty  file if exists
+	if [ -e "./fFileName" ]; then
+		> "$fFileName"
+	fi
+	
+   	arr=("$@")
+   	for i in "${arr[@]}";
+		do
+			myabsfile=$(get_abs_filename "$i")
+			
+			echo '"'"$myabsfile"'"' >> "$fFileName"
+		done
 }
 
 remove_dupe(){
@@ -144,11 +172,12 @@ log_process() {
 
 remove=
 language="en"
+fFileName=
 declare -a dupe_path
 declare -a excluded_files
 forgotToGiveInput=
 languageSelected=
-while getopts ":rx:l:" args ; do
+while getopts ":rx:l:f:" args ; do
 	
 	case $args in
 	r)
@@ -161,6 +190,9 @@ while getopts ":rx:l:" args ; do
 	l)
 		languageSelected=true
 		language=("$OPTARG")
+		;;
+	f)
+		fFileName=("$OPTARG")
 		;;
 	:)
 		forgotToGiveInput=true
