@@ -1,9 +1,10 @@
 #!/bin/bash
 
 
-readonly LANG_FILE_IS_EXCLUDED="This file is excluded"
+readonly LANG_FILE_EXCLUDED="File excluded:"
+readonly LANG_DIR_EXCLUDED="Dir excluded:"
 readonly LANG_NO_FILE_TO_CHECK="There are no files to check"
-readonly LANG_DUPLICATION_FOUND="Duplication found:"
+readonly LANG_DUPLICATION_FOUND="is a duplicate of"
 readonly LANG_REMOVED="Removed:"
 readonly LANG_DELETE_ALL_DUPLICATES="Delete all the duplicates"
 readonly LANG_FORGOT_TO_GIVE_INPUT="Oops! forgot to give an input for"
