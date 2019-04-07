@@ -1,5 +1,32 @@
 #!/bin/bash
 
+# Studenten:
+#			Huseyin Caliskan 2143416
+#			Storm Witziers <studentnummer>
+#
+#
+# Geïmplementeerde eisen:
+# 
+# Alleen bestanden in opgegeven start-directory (inclusief onderliggende directories) worden bekeken
+# Duplicaten van bestanden worden correct gevonden. Je mag hiervoor geen bestaand tool gebruiken (behalve shasum zoals vermeld bij de tips onderaan)
+# Verplicht getopts gebruiken voor het interpreteren van opties (zie uitwerking van textfrutter in oefenopgaven week 5);
+# optie -r om gevonden duplicaten direct te laten verwijderen;
+# optie -x <naam> om een file op te geven die buiten beschouwing gelaten moet worden bij het zoeken naar duplicaten. (mag meerdere keren worden gebruikt, elke uit te sluiten file moet met een aparte -x genoemd worden; geen wildcards gebruiken zoals *);
+# optie -l <landcode> om een landcode in 2 letters mee te geven, waarmee de taal van de meldingen kan worden ingesteld. Om dat te bouwen kun je voor alle meldingen shell variabelen definiëren, die je voor elke taal in een bestand zet. Dan kun je het juiste taalbestand laden met behulp van het source-mechanisme.
+# het script geeft aan welke duplicaten er gevonden zijn en wat de actie was. Je mag zelf bepalen hoe je deze meldingen precies weergeeft.
+# Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld:
+# 		start-tijd
+#		eind-tijd
+#		aantal gevonden en verwijderde duplicaten
+# foutmelding geven en daarna stoppen in de volgende gevallen:
+# 		er zijn opties meegegeven die je niet geïmplementeerd hebt, druk dan een usage string af;
+# 		de start-directory bestaat niet, is geen directory, of mag niet gelezen worden.
+
+# Extra
+#
+# optie -f <filename> om een bestand aan te maken met daarin de absolute paden naar alle gevonden duplicaten. Op elke regel staat 1 bestandsnaam omgeven door "-karakters. Dit bestand kan gebruikt worden om op een later tijdstip een bewerking op de gevonden duplicaten te kunnen doen met andere tool dan duper.
+# Zoek uit hoe je een eigen man pagemaakt, en maak er een voor duper.
+
 contains(){
 
 	local item=
@@ -31,7 +58,7 @@ find_dupe(){
 		isExcluded=$?	
 			
 		if [ $isExcluded -eq 0 ] ; then
-		       echo "This file is excluded $line"
+		       echo "$LANG_FILE_IS_EXCLUDED $line"
 	       	else	       
 			sha=$( shasum -a 256 "$line" ) #creates sha for all the files currencly searching
 			sha_collection+=($(echo "$sha" | awk '{ print $1 }'))
@@ -40,10 +67,10 @@ find_dupe(){
 			#printf "%s SHA: %s \\n" "$line" "$sha" 
 		fi
 
-	done < <(find . -type f)	
+	done < <(find "$startDirectory" -type f)	
 	
 	if [ "${#sha_collection[@]}" -eq 0 ] ; then       
-		echo "There are no files to check"
+		echo "$LANG_NO_FILE_TO_CHECK"
 	else
 		#duplicates=$(printf '%s\n' "${sha_collection[@]}" | awk '!($1 in dupe) { dupe[$1]; next; } 1')		
 		#dupe_path+=($(printf '%s' "$duplicates" | awk -F, '{ $1=""; print $0 }'))
@@ -66,7 +93,7 @@ find_dupe(){
 				
 				if [[ "${sha_collection[$i]}" == "$j" ]] ; then
 					dupes+=("${file_collection[$i]}")
-					echo "Duplication found: ${file_collection[$i]}"
+					echo "$LANG_DUPLICATION_FOUND ${file_collection[$i]}"
 					isDupe=true
 				fi	
 			done			
@@ -79,8 +106,34 @@ find_dupe(){
 		#printf ': %s\n' "${dupes[@]}"
 		
 		dupe_path=("${dupes[@]}")
-		amountDuplicatesFound=$(wc -l <<< "${dupes[@]}") 
+		amountDuplicatesFound=$(wc -l <<< "${dupes[@]}")
+		
+		if [ ! -z "$fFileName" ]; then
+			create_abs_filepaths_file "${dupe_path[@]}"
+		fi
 	fi
+}
+
+get_abs_filename() {
+  # $1 : relative filename
+  echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+}
+
+create_abs_filepaths_file() {
+  	touch "$fFileName"
+
+	# Empty  file if exists
+	if [ -e "./fFileName" ]; then
+		> "$fFileName"
+	fi
+	
+   	arr=("$@")
+   	for i in "${arr[@]}";
+		do
+			myabsfile=$(get_abs_filename "$i")
+			
+			echo '"'"$myabsfile"'"' >> "$fFileName"
+		done
 }
 
 remove_dupe(){
@@ -89,13 +142,15 @@ remove_dupe(){
 		
 		for file in "${dupe_path[@]}" ;  do
 			echo "==="
-			echo "Removed: $file"
+			echo "$LANG_REMOVED $file"
 			rm "$file"
 		done
 	fi
 }
 
 # Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld: start-tijd, eind-tijd
+amountDuplicatesFound=0;
+startTime=$(date "+%a %d %b %Y %T:%N")
 log_process() {
 	if [ ! -d "$HOME/var" ]; then
 		mkdir ~/var
@@ -114,58 +169,82 @@ log_process() {
 	echo -e "$logOutput" >> ~/var/duper.log
 }
 
-amountDuplicatesFound=0;
-startTime=$(date "+%a %d %b %Y %T:%N")
 
 remove=
+language="en"
+fFileName=
 declare -a dupe_path
 declare -a excluded_files
-
-while getopts ":rx:l:" args ; do
+forgotToGiveInput=
+languageSelected=
+while getopts ":rx:l:f:" args ; do
 	
 	case $args in
 	r)
-		echo "Delete all the duplicates"
 		remove=true	
-	;;
+		;;
 	x)
 		#echo "Exclude the following file $OPTARG"
 		excluded_files+=("$OPTARG")
-	;;
+		;;
 	l)
-		echo "Landcode $OPTARG"
-	;;
+		languageSelected=true
+		language=("$OPTARG")
+		;;
+	f)
+		fFileName=("$OPTARG")
+		;;
 	:)
-		echo "Oops! forgot to give an imput for $OPTARG"
-	;;
-	/?)
-    	echo "Usage: DELETE -r | EXCLUDE -x <name> | LANGUAGE -l <code>"
+		forgotToGiveInput=true
+		;;
+	\?)
+    	echo "Usage: DELETE -r | EXCLUDE -x <name> | LANGUAGE -l <landcode>"
 		exit 2
-	;;	
+		;;	
 	esac
 done
 
 shift $((OPTIND-1))
 
+# Get language
+if [ ! -e "$(dirname "$0")/lang/$language" ]; then
+	echo "INVALID language"
+	exit 2;
+elif [ -d "$(dirname "$0")/lang/$language" ]; then
+	echo "INVALID language"
+	exit 2
+fi
+source "$(dirname "$0")/lang/$language"
 
 # Get folder direction		
 if [ -z "$1" ]; then
-	echo "Please provide a directory"	
+	echo "$LANG_PLEASE_PROVIDE_DIRECTORY"	
 	exit 2;	
 else	
 	# Check if valid directory.	
 	if [ ! -d "$1" ]; then	
-		echo "Given path is not a directory or does not exist";	
+		echo "$LANG_INVALID_DIRECTORY";	
 		exit 2;	
 	fi	
 
  	if [ ! -w "$1" ]; then	
-		echo "You do not have write permission for this directory"	
+		echo "$LANG_DIRECTORY_NO_PERMISSIONS"	
 		exit 2;	
 	fi	
 fi
-
 startDirectory="$1"
+
+# OUTPUT options
+if [ ! -z "$remove" ]; then 
+	echo "$LANG_DELETE_ALL_DUPLICATES"
+fi
+if [ ! -z "$forgotToGiveInput" ]; then
+	echo "$LANG_FORGOT_TO_GIVE_INPUT $OPTARG"
+fi
+if [ ! -z "$languageSelected" ]; then
+	echo "Landcode $OPTARG"
+fi
+
 
 find_dupe
 remove_dupe
