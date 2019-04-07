@@ -1,4 +1,29 @@
 #!/bin/bash
+# Studenten:
+#			Huseyin Caliskan 2143416
+#			Storm Witziers <studentnummer>
+#
+#
+# Geïmplementeerde eisen:
+# 
+# Alleen bestanden in opgegeven start-directory (inclusief onderliggende directories) worden bekeken
+# Duplicaten van bestanden worden correct gevonden. Je mag hiervoor geen bestaand tool gebruiken (behalve shasum zoals vermeld bij de tips onderaan)
+# Verplicht getopts gebruiken voor het interpreteren van opties (zie uitwerking van textfrutter in oefenopgaven week 5);
+# optie -r om gevonden duplicaten direct te laten verwijderen;
+# optie -x <naam> om een file op te geven die buiten beschouwing gelaten moet worden bij het zoeken naar duplicaten. (mag meerdere keren worden gebruikt, elke uit te sluiten file moet met een aparte -x genoemd worden; geen wildcards gebruiken zoals *);
+# optie -l <landcode> om een landcode in 2 letters mee te geven, waarmee de taal van de meldingen kan worden ingesteld. Om dat te bouwen kun je voor alle meldingen shell variabelen definiëren, die je voor elke taal in een bestand zet. Dan kun je het juiste taalbestand laden met behulp van het source-mechanisme.
+# het script geeft aan welke duplicaten er gevonden zijn en wat de actie was. Je mag zelf bepalen hoe je deze meldingen precies weergeeft.
+# Het script maakt een directory ~/var en voegt regels aan een log file toe (duper.log) waarin diverse zaken omtrent het proces worden opgeslagen, zoals bijvoorbeeld:
+# 		start-tijd
+#		eind-tijd
+#		aantal gevonden en verwijderde duplicaten
+# foutmelding geven en daarna stoppen in de volgende gevallen:
+# 		er zijn opties meegegeven die je niet geïmplementeerd hebt, druk dan een usage string af;
+# 		de start-directory bestaat niet, is geen directory, of mag niet gelezen worden.
+
+# Extra
+#
+# Zoek uit hoe je een eigen man pagemaakt, en maak er een voor duper.
 
 contains(){
 
@@ -122,6 +147,7 @@ language="en"
 declare -a dupe_path
 declare -a excluded_files
 forgotToGiveInput=
+languageSelected=
 while getopts ":rx:l:" args ; do
 	
 	case $args in
@@ -133,7 +159,7 @@ while getopts ":rx:l:" args ; do
 		excluded_files+=("$OPTARG")
 		;;
 	l)
-		echo "Landcode $OPTARG"
+		languageSelected=true
 		language=("$OPTARG")
 		;;
 	:)
@@ -182,6 +208,9 @@ if [ ! -z "$remove" ]; then
 fi
 if [ ! -z "$forgotToGiveInput" ]; then
 	echo "$LANG_FORGOT_TO_GIVE_INPUT $OPTARG"
+fi
+if [ ! -z "$languageSelected" ]; then
+	echo "Landcode $OPTARG"
 fi
 
 
